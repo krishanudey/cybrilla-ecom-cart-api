@@ -32,12 +32,11 @@ export class CartItem {
             this._quantity = newQuantity;
         }
     }
-    transform(): any {
+    transform() {
         return {
             name: this.productName,
             unitPrice: this.unitPrice,
             quantity: this.quantity,
-            itemTotal: this.itemTotal,
         };
     }
 }

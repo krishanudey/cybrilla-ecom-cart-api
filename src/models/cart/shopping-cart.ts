@@ -6,15 +6,21 @@ import { ItemPromotion } from '../promotion/core/item-promotion';
 
 export class ShoppingCart {
     private items: Map<string, CartItem> = new Map();
-    private _discount: number = 0.0;
+    // private _discount: number = 0.0;
     private _promotions: Promotion<any>[] = [];
+    private _cartDiscount: number = 0.0;
+    private _itemDiscounts: Map<string, number> = new Map();
 
     constructor(promotions: Promotion<any>[]) {
         this._promotions = promotions || [];
     }
 
     public get discount(): number {
-        return this._discount;
+        let discount = this._cartDiscount;
+        this._itemDiscounts.forEach((productDiscount) => {
+            discount += productDiscount;
+        });
+        return discount;
     }
 
     public get preDiscountTotal(): number {
@@ -40,23 +46,40 @@ export class ShoppingCart {
         this.items.set(product.name, cartItem);
         this.runPromotions();
     }
+    removeItemFromCart(product: Product, quantity: number = 1) {
+        let cartItem: CartItem = this.items.get(product.name);
+        if (cartItem) {
+            cartItem.setQuantity(Math.max(cartItem.quantity - quantity, 0));
+        }
+        this.items.set(product.name, cartItem);
+        this.runPromotions();
+    }
 
     clearCart() {
         this.items.clear();
-        this._discount = 0.0;
+        this._cartDiscount = 0.0;
+        this._itemDiscounts.clear();
     }
 
-    transform(): any {
+    transform() {
         return {
-            items: this.getItems().map((ci) => ci.transform()),
-            discount: this.discount,
-            preCartDiscountTotal: this.preDiscountTotal,
-            postCartDiscountTotal: this.postDiscountTotal,
+            items: this.getItems().map((ci) => {
+                const transformed = ci.transform();
+                return {
+                    ...transformed,
+                    totalDiscount: this._itemDiscounts.get(ci.productName),
+                };
+            }),
+            cartDiscount: this._cartDiscount,
+            totalDiscount: this.discount,
+            preDiscountTotal: this.preDiscountTotal,
+            postDiscountTotal: this.postDiscountTotal,
         };
     }
 
     private runPromotions() {
-        this._discount = 0.0;
+        this._cartDiscount = 0.0;
+        this._itemDiscounts.clear();
         let cartPromotions: CartPromotion[] = [];
         let itemPromotions: ItemPromotion[] = [];
 
@@ -68,40 +91,25 @@ export class ShoppingCart {
             }
         });
 
-        let productDiscount = 0.0;
         if (itemPromotions.length > 0) {
             this.getItems().forEach((item) => {
-                productDiscount += Math.max(
-                    ...itemPromotions.map((p) => {
-                        return p.apply(item);
-                    }),
+                this._itemDiscounts.set(
+                    item.productName,
+                    Math.max(
+                        ...itemPromotions.map((p) => {
+                            return p.apply(item);
+                        }),
+                    ),
                 );
             });
         }
 
-        this._discount = productDiscount;
-
-        let cartDiscount = 0.0;
         if (cartPromotions.length) {
-            cartDiscount = Math.max(
+            this._cartDiscount = Math.max(
                 ...cartPromotions.map((p) => {
                     return p.apply(this);
                 }),
             );
         }
-
-        this._discount += cartDiscount;
-        // console.log(
-        //     'ShoppingCart -> runPromotions -> productDiscount',
-        //     productDiscount,
-        // );
-        // console.log(
-        //     'ShoppingCart -> runPromotions -> cartDiscount',
-        //     cartDiscount,
-        // );
-        // console.log(
-        //     'ShoppingCart -> runPromotions -> this._discount',
-        //     this._discount,
-        // );
     }
 }
