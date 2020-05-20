@@ -31,6 +31,12 @@ class ShoppingApp {
         this.handleCartData(await response.json());
         this.hideLoader();
     };
+    emptyCart = async () => {
+        this.showLoader();
+        const response = await fetch(`/api/cart/empty`);
+        this.handleCartData(await response.json());
+        this.hideLoader();
+    };
 
     loadProducts = async () => {
         this.showLoader();
@@ -48,6 +54,10 @@ class ShoppingApp {
     init = async () => {
         await this.loadProducts();
         await this.loadCart();
+
+        document.querySelector('.empty-cart').addEventListener('click', () => {
+            this.emptyCart();
+        });
     };
 
     handleProducts = (products) => {

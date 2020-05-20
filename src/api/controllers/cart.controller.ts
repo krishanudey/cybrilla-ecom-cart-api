@@ -17,3 +17,8 @@ export const addProductToCart = (req: Request, res: Response) => {
     cart.addItemToCart(product);
     res.json(cart.transform());
 };
+
+export const emptyCart = (_req: Request, res: Response) => {
+    cart.clearCart();
+    res.json(cart.transform());
+};

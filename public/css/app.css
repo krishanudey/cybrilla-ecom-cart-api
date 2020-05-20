@@ -128,3 +128,9 @@ a {
   text-align: center;
   font-weight: normal;
 }
+.empty-button-container {
+  text-align: center;
+}
+.content .cart .empty-cart {
+  margin: 2em auto;
+}
