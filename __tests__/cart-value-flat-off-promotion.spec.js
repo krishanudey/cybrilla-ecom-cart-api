@@ -15,23 +15,21 @@ describe('Cart value flat off promotion', () => {
 
     const productA = new Product('A', 30);
     const productB = new Product('B', 20);
-    const cart = new ShoppingCart();
+    const productC = new Product('C', 50);
+    const productD = new Product('D', 15);
+    const cart = new ShoppingCart([promotion]);
 
     test('it should not apply promotion when cart value is below 150', () => {
         cart.addItemToCart(productA);
         cart.addItemToCart(productA);
         cart.addItemToCart(productB);
-        const discount = promotion.apply(cart);
-        expect(discount).toEqual(0);
+        expect(cart.discount).toEqual(0);
     });
-    test('it should not apply promotion when cart value is minimum 150', () => {
-        cart.addItemToCart(productA);
-        cart.addItemToCart(productA);
+    test('it should apply promotion when cart value is minimum 150', () => {
         cart.addItemToCart(productA);
         cart.addItemToCart(productB);
-        cart.addItemToCart(productB);
-        cart.addItemToCart(productB);
-        const discount = promotion.apply(cart);
-        expect(discount).toEqual(20);
+        cart.addItemToCart(productC);
+        cart.addItemToCart(productC);
+        expect(cart.discount).toEqual(20);
     });
 });

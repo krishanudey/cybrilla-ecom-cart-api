@@ -8,7 +8,7 @@ products.set('B', new Product('B', 20));
 products.set('C', new Product('C', 50));
 products.set('D', new Product('D', 15));
 
-let cart = new ShoppingCart();
+let cart = new ShoppingCart([]);
 
 // Case 1
 cart.addItemToCart(products.get('A'));

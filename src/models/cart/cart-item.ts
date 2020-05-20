@@ -15,17 +15,13 @@ export class CartItem {
     }
 
     public get itemTotal(): number {
-        return this._unitPrice * this.quantity;
+        return this.unitPrice * this.quantity;
     }
 
     constructor(productName: string, unitPrice: number, quantity: number) {
         this._productName = productName;
         this._unitPrice = unitPrice;
         this._quantity = quantity;
-    }
-
-    setPrice(newPrice: number) {
-        this._unitPrice = newPrice;
     }
 
     setQuantity(newQuantity: number) {

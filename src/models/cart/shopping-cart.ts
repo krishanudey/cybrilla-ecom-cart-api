@@ -1,17 +1,20 @@
 import { CartItem } from './cart-item';
 import { Product } from '../product';
+import { Promotion } from '../promotion/core/promotion';
+import { CartPromotion } from '../promotion/core/cart-promotion';
+import { ItemPromotion } from '../promotion/core/item-promotion';
 
 export class ShoppingCart {
     private items: Map<string, CartItem> = new Map();
     private _discount: number = 0.0;
+    private _promotions: Promotion<any>[] = [];
 
-    constructor() {}
+    constructor(promotions: Promotion<any>[]) {
+        this._promotions = promotions || [];
+    }
 
     public get discount(): number {
         return this._discount;
-    }
-    public get totalDiscount(): number {
-        return this.discount;
     }
 
     public get preDiscountTotal(): number {
@@ -53,6 +56,52 @@ export class ShoppingCart {
     }
 
     private runPromotions() {
-        //TODO:
+        this._discount = 0.0;
+        let cartPromotions: CartPromotion[] = [];
+        let itemPromotions: ItemPromotion[] = [];
+
+        this._promotions.forEach((promotion) => {
+            if (promotion instanceof ItemPromotion) {
+                itemPromotions.push(promotion);
+            } else if (promotion instanceof CartPromotion) {
+                cartPromotions.push(promotion);
+            }
+        });
+
+        let productDiscount = 0.0;
+        if (itemPromotions.length > 0) {
+            this.getItems().forEach((item) => {
+                productDiscount += Math.max(
+                    ...itemPromotions.map((p) => {
+                        return p.apply(item);
+                    }),
+                );
+            });
+        }
+
+        this._discount = productDiscount;
+
+        let cartDiscount = 0.0;
+        if (cartPromotions.length) {
+            cartDiscount = Math.max(
+                ...cartPromotions.map((p) => {
+                    return p.apply(this);
+                }),
+            );
+        }
+
+        this._discount += cartDiscount;
+        // console.log(
+        //     'ShoppingCart -> runPromotions -> productDiscount',
+        //     productDiscount,
+        // );
+        // console.log(
+        //     'ShoppingCart -> runPromotions -> cartDiscount',
+        //     cartDiscount,
+        // );
+        // console.log(
+        //     'ShoppingCart -> runPromotions -> this._discount',
+        //     this._discount,
+        // );
     }
 }
